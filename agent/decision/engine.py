@@ -41,6 +41,16 @@ class DecisionEngine:
         energy = ctx.get("energy", 0)
         enemies = ctx.get("enemies", [])
 
+        # 检查是否是玩家回合
+        if not ctx.get("is_play_phase", True):
+            return Decision(
+                action_name="wait",
+                params={},
+                reason="当前是敌人回合，等待玩家回合",
+                source="heuristic",
+                confidence=1.0
+            )
+
         # 过滤可打的牌（费用 <= 当前能量 且 can_play 为 True）
         playable_cards = [
             (i, card) for i, card in enumerate(hand)

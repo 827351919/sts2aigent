@@ -121,6 +121,8 @@ class StateManager:
             "enemies": battle.get("enemies", []),
             "turn": battle.get("turn", 1),
             "can_end_turn": True,
+            "is_play_phase": battle.get("is_play_phase", True),
+            "turn_phase": "player" if battle.get("is_play_phase") else "enemy",
         }
 
     def _reward_handler(self, state: GameState) -> dict[str, Any]:
