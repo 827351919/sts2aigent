@@ -37,18 +37,22 @@ class ActionExecutor:
                 decision.params
             )
 
-            # 解析结果
-            success = result.get("success", False)
-            message = result.get("message", "")
-
-            if success:
+            # 解析结果 - STS2MCP 格式: {"status": "ok"/"error", "message": "..." / "error": "..."}
+            status = result.get("status", "")
+            if status == "ok":
+                message = result.get("message", "")
                 self.logger.log_action(decision.action_name, True, message)
                 return ActionResult.success(message, result)
+            elif status == "error":
+                error_msg = result.get("error", "Unknown error")
+                self.logger.log_action(decision.action_name, False, error_msg)
+                retryable = self._is_retryable_error(error_msg)
+                return ActionResult.failure(error_msg, retryable)
             else:
-                self.logger.log_action(decision.action_name, False, message)
-                # 判断是否可重试
-                retryable = self._is_retryable_error(message)
-                return ActionResult.failure(message, retryable)
+                # 未知状态，尝试兼容处理
+                message = str(result)
+                self.logger.warning(f"未知的响应格式: {result}")
+                return ActionResult.failure(f"Unknown response format: {message}", retryable=False)
 
         except MCPClientError as e:
             self.logger.error(f"执行动作失败: {decision.action_name}", error=str(e))
