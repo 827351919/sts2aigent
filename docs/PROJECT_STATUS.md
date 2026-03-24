@@ -57,7 +57,15 @@
    - Agent 发送 `{"index": 0}`，但 STS2MCP 期望 `{"card_index": 0}`
    - **修复**：统一将 `index` 改为 `card_index`（涉及 engine.py 和 actions.py）
 
-**当前状态**：参数名已修正，可重新测试验证。
+4. **战斗回合时序问题**（已修复）
+   - Agent 在敌人回合尝试出牌，导致 `Not in play phase` 错误
+   - **修复**：添加 `is_play_phase` 检查，非玩家回合时返回 wait
+
+5. **choose_map_node 参数名错误**（已修复）
+   - Agent 发送 `{"index": 0}`，但 STS2MCP 期望 `{"map_index": 0}`
+   - **修复**：统一将 `index` 改为 `map_index`（涉及 engine.py 和 actions.py）
+
+**当前状态**：以上参数名和时序问题已修复，可重新测试验证。
 
 ## 里程碑状态
 
