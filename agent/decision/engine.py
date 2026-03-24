@@ -35,11 +35,11 @@ class DecisionEngine:
           target 是 entity_id (如 "jaw_worm_0")
         - end_turn: {"action": "end_turn"}
         """
-        battle = context or state.battle or {}
-        player = battle.get("player", {})
-        hand = player.get("hand", [])
-        energy = player.get("energy", 0)
-        enemies = battle.get("enemies", [])
+        # 从扁平结构读取（StateManager._combat_handler 返回扁平结构）
+        ctx = context or state.battle or {}
+        hand = ctx.get("hand", [])
+        energy = ctx.get("energy", 0)
+        enemies = ctx.get("enemies", [])
 
         # 过滤可打的牌（费用 <= 当前能量 且 can_play 为 True）
         playable_cards = [

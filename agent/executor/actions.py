@@ -107,7 +107,7 @@ class ActionExecutor:
         # 战斗动作验证
         if action == "play_card":
             card_idx = params.get("card_index")
-            hand = state.get("battle", {}).get("hand", [])
+            hand = state.get("hand", [])
 
             if card_idx is None:
                 return "缺少 card_index 参数"
@@ -116,9 +116,9 @@ class ActionExecutor:
             if card_idx < 0 or card_idx >= len(hand):
                 return f"card_index {card_idx} 超出手牌范围 [0, {len(hand)})"
 
-        elif action == "select_card":
+        elif action == "select_card_reward":
             card_idx = params.get("index")
-            cards = state.get("rewards", {}).get("cards", [])
+            cards = state.get("card_reward", {}).get("cards", [])
 
             if card_idx is None:
                 return "缺少 index 参数"
@@ -127,10 +127,16 @@ class ActionExecutor:
             if card_idx < 0 or card_idx >= len(cards):
                 return f"index {card_idx} 超出卡牌范围 [0, {len(cards)})"
 
-        elif action == "select_node":
-            node_id = params.get("node_id")
-            if node_id is None:
-                return "缺少 node_id 参数"
+        elif action == "choose_map_node":
+            node_idx = params.get("index")
+            next_options = state.get("map", {}).get("next_options", [])
+
+            if node_idx is None:
+                return "缺少 index 参数"
+            if not isinstance(node_idx, int):
+                return "index 必须是整数"
+            if node_idx < 0 or node_idx >= len(next_options):
+                return f"index {node_idx} 超出可用节点范围 [0, {len(next_options)})"
 
         # 其他动作暂时不验证
         return None
