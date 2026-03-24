@@ -2,18 +2,26 @@
 
 ## 高优先级
 
-- [ ] 创建 `main.py` 入口文件，建立 Agent 启动与主循环骨架
-- [ ] 实现 `mcp_client/client.py`，直接对接 `http://localhost:15526`
-- [ ] 定义内部状态模型：
+- [x] 创建 `main.py` 入口文件，建立 Agent 启动与主循环骨架
+- [x] 实现 `mcp_client/client.py`，直接对接 `http://localhost:15526`
+- [x] 定义内部状态模型：
   - `GameState`
   - `Decision`
   - `ActionResult`
-- [ ] 实现状态机分发逻辑，按 `state_type` 路由到对应 handler
-- [ ] 先实现三个核心 handler：
+- [x] 实现状态机分发逻辑，按 `state_type` 路由到对应 handler
+- [x] 先实现三个核心 handler：
   - combat
   - combat_rewards / card_reward
   - map
-- [ ] 建立基础日志系统，确保每一步可复盘
+- [x] 建立基础日志系统，确保每一步可复盘
+
+## Phase 2 准备
+
+- [ ] 实际游戏测试，验证最小闭环
+- [ ] 处理测试中发现的 bug
+- [ ] 实现 `event` handler
+- [ ] 实现 `rest_site` handler
+- [ ] 实现 `shop` handler
 
 ## 中优先级
 

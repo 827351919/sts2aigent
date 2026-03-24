@@ -26,28 +26,31 @@
 
 ### 当前现实情况
 
-- `sts2-ai-agent-master` 目前仍以目录骨架为主
-- 关键实现文件尚未落地：
-  - `main.py`
-  - `mcp_client/client.py`
-  - `agent/state/manager.py`
-  - `agent/decision/engine.py`
-  - `agent/executor/actions.py`
-  - `knowledge/loader.py`
-- 项目尚未打通最小运行闭环
+- `sts2-ai-agent-master` Phase 1 已实现
+- 核心文件已落地：
+  - `main.py` - Agent 入口和主循环
+  - `mcp_client/client.py` - HTTP 客户端
+  - `agent/state/models.py` - 状态模型
+  - `agent/state/manager.py` - 状态机管理器
+  - `agent/decision/engine.py` - 启发式决策引擎
+  - `agent/executor/actions.py` - 动作执行器
+  - `utils/logger.py` - 日志系统
+  - `utils/config.py` - 配置加载
+- 已实现最小闭环：状态读取 -> 决策 -> 执行 -> 刷新
+- 待实现：`knowledge/loader.py` 等知识库相关功能
 
 ## 里程碑状态
 
 | 里程碑 | 状态 | 说明 |
 |------|------|------|
 | 明确项目方向 | 已完成 | 已完成技术方案与边界梳理 |
-| 完善 PRD | 已完成 | 已将目标调整为“先闭环” |
+| 完善 PRD | 已完成 | 已将目标调整为”先闭环” |
 | 搭建基础协作文档 | 已完成 | 补齐项目协作文档 |
-| 实现 HTTP client | 未开始 | 需要直连 `STS2MCP` HTTP API |
-| 实现状态机主循环 | 未开始 | 需要形成最小可运行闭环 |
-| 实现核心 handler | 未开始 | 优先 combat / rewards / map |
+| 实现 HTTP client | 已完成 | MCPClient 已实现连接、重试、错误处理 |
+| 实现状态机主循环 | 已完成 | main.py 主循环 + graceful shutdown |
+| 实现核心 handler | 已完成 | combat / rewards / map 三个 handler |
 | 导入 AIBOT 知识 | 未开始 | 先导基础 JSON |
-| 完整跑通单局 | 未开始 | MVP 目标 |
+| 完整跑通单局 | 进行中 | 需要实际游戏测试验证 |
 
 ## 当前判断
 
