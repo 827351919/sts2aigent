@@ -69,10 +69,21 @@
    - 当 `is_play_phase` 为 False 时返回 wait Decision，但 `wait` 不是有效的 MCP 动作
    - 导致报错 "Unknown action: wait"
    - **修复**：非玩家回合时返回 `None`，主循环检测到 None 则跳过动作执行
-   - Agent 发送 `{"index": 0}`，但 STS2MCP 期望 `{"map_index": 0}`
-   - **修复**：统一将 `index` 改为 `map_index`（涉及 engine.py 和 actions.py）
 
-**当前状态**：以上参数名和时序问题已修复，可重新测试验证。
+### 2026-03-24 Codex Review 结论
+
+**代码内部一致性**：已达标 ✅
+
+- main.py 已处理 `decision is None` 的情况，敌方回合不会再因为空决策崩掉
+- `card_reward` 参数名已统一为 `card_index`，决策层和执行校验层一致
+- 动作响应解析已改为按 STS2MCP 的 `status=ok/error` 处理
+
+**残余风险**（联调风险，非代码内部矛盾）：
+
+1. **战斗状态结构假设**：combat 相关代码假设手牌和能量来自 `battle["player"]`，如果真实 STS2MCP 返回值结构不同，会在联调时暴露
+2. **缺乏真实状态样本**：目前没看到真实状态样本或自动化 fixture
+
+**结论**：代码层面基本达标，可以进入下一步；建议先跑一轮真实 combat/reward/map 日志，再正式宣告第一阶段完成。
 
 ## 里程碑状态
 
@@ -83,7 +94,7 @@
 | 搭建基础协作文档 | 已完成 | 补齐项目协作文档 |
 | 实现 HTTP client | 已完成 | MCPClient 已实现连接、重试、错误处理 |
 | 实现状态机主循环 | 已完成 | main.py 主循环 + graceful shutdown |
-| 实现核心 handler | 已完成 | combat / rewards / map 三个 handler |
+| 实现核心 handler | 已完成（待联调验证） | combat / rewards / map 三个 handler 已实现，需真实游戏验证状态结构 |
 | 导入 AIBOT 知识 | 未开始 | 先导基础 JSON |
 | 完整跑通单局 | 进行中 | 需要实际游戏测试验证 |
 
