@@ -65,6 +65,13 @@
    - Agent 发送 `{"index": 0}`，但 STS2MCP 期望 `{"map_index": 0}`
    - **修复**：统一将 `index` 改为 `map_index`（涉及 engine.py 和 actions.py）
 
+6. **非玩家回合 wait 动作无效**（已修复）
+   - 当 `is_play_phase` 为 False 时返回 wait Decision，但 `wait` 不是有效的 MCP 动作
+   - 导致报错 "Unknown action: wait"
+   - **修复**：非玩家回合时返回 `None`，主循环检测到 None 则跳过动作执行
+   - Agent 发送 `{"index": 0}`，但 STS2MCP 期望 `{"map_index": 0}`
+   - **修复**：统一将 `index` 改为 `map_index`（涉及 engine.py 和 actions.py）
+
 **当前状态**：以上参数名和时序问题已修复，可重新测试验证。
 
 ## 里程碑状态
