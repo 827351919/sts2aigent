@@ -129,7 +129,7 @@ class DecisionEngine:
             card_name = cards[0].get("name", f"card_0")
             return Decision(
                 action_name="select_card_reward",
-                params={"index": 0},
+                params={"card_index": 0},
                 reason=f"选择第一张卡牌[{card_name}]",
                 source="heuristic",
                 confidence=0.5

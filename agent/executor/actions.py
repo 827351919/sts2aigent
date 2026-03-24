@@ -124,17 +124,17 @@ class ActionExecutor:
                 return f"card_index {card_idx} 超出手牌范围 [0, {len(hand)})"
 
         elif action == "select_card_reward":
-            card_idx = params.get("index")
+            card_idx = params.get("card_index")
             # raw_state 结构: {"state_type": "card_reward", "card_reward": {"cards": [...]}}
             raw_card_reward = state.get("card_reward", {})
             cards = raw_card_reward.get("cards", [])
 
             if card_idx is None:
-                return "缺少 index 参数"
+                return "缺少 card_index 参数"
             if not isinstance(card_idx, int):
-                return "index 必须是整数"
+                return "card_index 必须是整数"
             if card_idx < 0 or card_idx >= len(cards):
-                return f"index {card_idx} 超出卡牌范围 [0, {len(cards)})"
+                return f"card_index {card_idx} 超出卡牌范围 [0, {len(cards)})"
 
         elif action == "choose_map_node":
             node_idx = params.get("index")
