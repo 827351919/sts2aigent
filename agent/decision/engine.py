@@ -27,7 +27,7 @@ class DecisionEngine:
         else:
             return self._fallback_decision(state, context)
 
-    def _combat_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
+    def _combat_decision(self, state: GameState, context: dict[str, Any]) -> Decision | None:
         """战斗决策：能打就打，不能打就结束回合
 
         STS2MCP 动作格式:
@@ -43,13 +43,7 @@ class DecisionEngine:
 
         # 检查是否是玩家回合
         if not ctx.get("is_play_phase", True):
-            return Decision(
-                action_name="wait",
-                params={},
-                reason="当前是敌人回合，等待玩家回合",
-                source="heuristic",
-                confidence=1.0
-            )
+            return None
 
         # 过滤可打的牌（费用 <= 当前能量 且 can_play 为 True）
         playable_cards = [

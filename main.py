@@ -108,6 +108,11 @@ class STS2Agent:
             # 4. 生成决策
             decision = self.decision_engine.decide(game_state, context)
 
+            # 如果返回 None，说明当前不需要执行动作（如敌人回合）
+            if decision is None:
+                self.logger.debug("当前无需执行动作，等待中...")
+                return
+
             # 5. 执行动作
             result = self.executor.validate_and_execute(decision, raw_state)
 
