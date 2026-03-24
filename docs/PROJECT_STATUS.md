@@ -53,7 +53,11 @@
    - **修复**：更新为新的 action 名 `select_card_reward`/`choose_map_node`
    - 同时修复了 `play_card` 的 hand 读取路径
 
-**当前状态**：第一阶段代码结构问题已修复，等待实际游戏联调验证。
+3. **select_card_reward 参数名错误**（已修复）
+   - Agent 发送 `{"index": 0}`，但 STS2MCP 期望 `{"card_index": 0}`
+   - **修复**：统一将 `index` 改为 `card_index`（涉及 engine.py 和 actions.py）
+
+**当前状态**：参数名已修正，可重新测试验证。
 
 ## 里程碑状态
 
