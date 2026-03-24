@@ -108,50 +108,69 @@ class StateManager:
         battle = state.battle or {}
         player = state.player or {}
 
+        # 根据 STS2MCP 结构，energy 和 hand 在 battle["player"] 下
+        battle_player = battle.get("player", {})
+
         return {
             "state_type": state.state_type,
             "player_hp": player.get("hp", 0),
             "player_max_hp": player.get("max_hp", 0),
-            "energy": battle.get("energy", 0),
-            "max_energy": battle.get("max_energy", 3),
-            "hand": battle.get("hand", []),
+            "energy": battle_player.get("energy", 0),
+            "max_energy": battle_player.get("max_energy", 3),
+            "hand": battle_player.get("hand", []),
             "enemies": battle.get("enemies", []),
             "turn": battle.get("turn", 1),
             "can_end_turn": True,
         }
 
     def _reward_handler(self, state: GameState) -> dict[str, Any]:
-        """战斗奖励处理器"""
+        """战斗奖励处理器 - 根据 STS2MCP 结构，rewards 有 items[] 数组"""
         rewards = state.rewards or {}
+        items = rewards.get("items", [])
+
+        # 按类型分类奖励
+        gold_items = [i for i in items if i.get("type") == "gold"]
+        relic_items = [i for i in items if i.get("type") == "relic"]
+        potion_items = [i for i in items if i.get("type") == "potion"]
+        card_items = [i for i in items if i.get("type") == "card"]
 
         return {
             "state_type": state.state_type,
-            "gold": rewards.get("gold", 0),
-            "relics": rewards.get("relics", []),
-            "potions": rewards.get("potions", []),
-            "cards": rewards.get("cards", []),
-            "can_skip": True,
+            "items": items,
+            "gold_rewards": gold_items,
+            "relic_rewards": relic_items,
+            "potion_rewards": potion_items,
+            "card_rewards": card_items,
+            "can_proceed": rewards.get("can_proceed", False),
         }
 
     def _card_reward_handler(self, state: GameState) -> dict[str, Any]:
-        """卡牌奖励处理器"""
-        rewards = state.rewards or {}
+        """卡牌奖励处理器 - 根据 STS2MCP 结构，card_reward 有 cards[] 数组"""
+        raw = state.raw or {}
+        card_reward = raw.get("card_reward", {})
+        cards = card_reward.get("cards", [])
 
         return {
             "state_type": state.state_type,
-            "cards": rewards.get("cards", []),
-            "can_skip": True,
+            "cards": cards,
+            "can_skip": card_reward.get("can_skip", True),
         }
 
     def _map_handler(self, state: GameState) -> dict[str, Any]:
-        """地图状态处理器"""
-        map_data = state.map or {}
+        """地图状态处理器 - 根据 STS2MCP 结构，地图有 next_options[] 数组"""
+        raw = state.raw or {}
+        map_data = raw.get("map", {})
+
+        # STS2MCP 地图结构: next_options[] 包含可前往的节点
+        next_options = map_data.get("next_options", [])
 
         return {
             "state_type": state.state_type,
-            "current_node": map_data.get("current_node"),
-            "available_nodes": map_data.get("available_nodes", []),
-            "boss_known": map_data.get("boss_known", False),
+            "current_position": map_data.get("current_position"),
+            "visited": map_data.get("visited", []),
+            "next_options": next_options,
+            "nodes": map_data.get("nodes", []),
+            "boss": map_data.get("boss"),
         }
 
     def _safe_state_handler(self, state: GameState) -> dict[str, Any]:

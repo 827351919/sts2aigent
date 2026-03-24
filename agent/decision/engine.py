@@ -28,16 +28,23 @@ class DecisionEngine:
             return self._fallback_decision(state, context)
 
     def _combat_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
-        """战斗决策：能打就打，不能打就结束回合"""
+        """战斗决策：能打就打，不能打就结束回合
+
+        STS2MCP 动作格式:
+        - play_card: {"action": "play_card", "card_index": int, "target": str}
+          target 是 entity_id (如 "jaw_worm_0")
+        - end_turn: {"action": "end_turn"}
+        """
         battle = context or state.battle or {}
-        hand = battle.get("hand", [])
-        energy = battle.get("energy", 0)
+        player = battle.get("player", {})
+        hand = player.get("hand", [])
+        energy = player.get("energy", 0)
         enemies = battle.get("enemies", [])
 
-        # 过滤可打的牌（费用 <= 当前能量）
+        # 过滤可打的牌（费用 <= 当前能量 且 can_play 为 True）
         playable_cards = [
             (i, card) for i, card in enumerate(hand)
-            if card.get("cost", 99) <= energy
+            if card.get("can_play", False) and int(card.get("cost", 99)) <= energy
         ]
 
         if playable_cards:
@@ -45,16 +52,20 @@ class DecisionEngine:
             card_idx, card = playable_cards[0]
             card_name = card.get("name", f"card_{card_idx}")
 
-            # 确定目标（默认第一个活着的敌人）
-            target_idx = 0
-            for i, enemy in enumerate(enemies):
+            # 确定目标（默认第一个活着的敌人的 entity_id）
+            target = None
+            for enemy in enemies:
                 if enemy.get("hp", 0) > 0:
-                    target_idx = i
+                    target = enemy.get("entity_id")
                     break
+
+            params = {"card_index": card_idx}
+            if target and card.get("target_type") == "AnyEnemy":
+                params["target"] = target
 
             return Decision(
                 action_name="play_card",
-                params={"card_index": card_idx, "target_index": target_idx},
+                params=params,
                 reason=f"打出手牌[{card_name}]，费用{card.get('cost')} <= 能量{energy}",
                 source="heuristic",
                 confidence=0.8
@@ -71,89 +82,84 @@ class DecisionEngine:
 
     def _reward_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
         """战斗奖励决策：拿第一个奖励"""
-        rewards = context or state.rewards or {}
+        # 根据 STS2MCP 协议，使用 claim_reward(index) 拿取奖励
+        items = context.get("items", []) if context else []
+        if not items:
+            # 尝试从 state.rewards 获取
+            rewards = state.rewards or {}
+            items = rewards.get("items", [])
 
-        # 优先拿遗物
-        relics = rewards.get("relics", [])
-        if relics:
+        if items:
+            # 拿取第一个奖励
+            first_item = items[0]
+            item_type = first_item.get("type", "unknown")
             return Decision(
-                action_name="take_relic",
+                action_name="claim_reward",
                 params={"index": 0},
-                reason="拿取第一个遗物",
+                reason=f"拿取第一个奖励[{item_type}]: {first_item.get('description', '')}",
                 source="heuristic",
                 confidence=0.7
             )
 
-        # 其次拿药水
-        potions = rewards.get("potions", [])
-        if potions:
+        # 检查是否可以 proceed
+        can_proceed = context.get("can_proceed", False)
+        if can_proceed:
             return Decision(
-                action_name="take_potion",
-                params={"index": 0},
-                reason="拿取第一个药水",
-                source="heuristic",
-                confidence=0.7
-            )
-
-        # 最后拿金币
-        gold = rewards.get("gold", 0)
-        if gold > 0:
-            return Decision(
-                action_name="take_gold",
+                action_name="proceed",
                 params={},
-                reason=f"拿取{gold}金币",
+                reason="奖励已领取完毕，继续前进",
                 source="heuristic",
-                confidence=0.9
+                confidence=1.0
             )
 
-        # 没有奖励，跳过
+        # 没有奖励，等待
         return Decision(
-            action_name="skip",
+            action_name="wait",
             params={},
             reason="没有可拿的奖励",
-            source="heuristic",
-            confidence=1.0
+            source="fallback",
+            confidence=0.3
         )
 
     def _card_reward_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
         """卡牌奖励决策：选第一张或跳过"""
         cards = context.get("cards", []) if context else []
-        if not cards and state.rewards:
-            cards = state.rewards.get("cards", [])
 
         if cards:
             card_name = cards[0].get("name", f"card_0")
             return Decision(
-                action_name="select_card",
-                params={"index": 0},
+                action_name="select_card_reward",
+                params={"card_index": 0},
                 reason=f"选择第一张卡牌[{card_name}]",
                 source="heuristic",
                 confidence=0.5
             )
         else:
             return Decision(
-                action_name="skip",
+                action_name="skip_card_reward",
                 params={},
-                reason="没有卡牌可选",
+                reason="没有卡牌可选，跳过",
                 source="heuristic",
                 confidence=1.0
             )
 
     def _map_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
-        """地图决策：选第一个可用节点"""
-        available = context.get("available_nodes", [])
-        if not available and state.map:
-            available = state.map.get("available_nodes", [])
+        """地图决策：选第一个可用节点
 
-        if available:
-            node = available[0]
-            node_id = node.get("id", 0) if isinstance(node, dict) else node
-            node_type = node.get("type", "unknown") if isinstance(node, dict) else "unknown"
+        STS2MCP 动作: choose_map_node(index)
+        index 是 next_options 数组中的索引
+        """
+        next_options = context.get("next_options", [])
+
+        if next_options:
+            node = next_options[0]
+            node_type = node.get("type", "unknown")
+            node_coord = (node.get("col", 0), node.get("row", 0))
 
             return Decision(
-                action_name="select_node",
-                params={"node_id": node_id},
-                reason=f"选择第一个可用节点[{node_type}]",
+                action_name="choose_map_node",
+                params={"index": 0},  # index 对应 next_options 中的位置
+                reason=f"选择第一个可用节点[{node_type}] at {node_coord}",
                 source="heuristic",
                 confidence=0.6
             )

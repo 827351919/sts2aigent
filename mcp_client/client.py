@@ -96,7 +96,7 @@ class MCPClient:
         self.logger.debug("获取游戏状态...")
         try:
             # 尝试获取单人游戏状态
-            result = self._make_request("GET", "/api/v1/singleplayer/state")
+            result = self._make_request("GET", "/api/v1/singleplayer")
             self.logger.debug("成功获取游戏状态")
             return result
         except MCPConnectionError:
@@ -108,13 +108,11 @@ class MCPClient:
         params = params or {}
         self.logger.debug(f"执行动作: {action_name}", params=params)
 
-        payload = {
-            "action": action_name,
-            "params": params
-        }
+        # 扁平格式: {"action": action_name, **params}
+        payload = {"action": action_name, **params}
 
         try:
-            result = self._make_request("POST", "/api/v1/singleplayer/action", payload)
+            result = self._make_request("POST", "/api/v1/singleplayer", payload)
             self.logger.debug(f"动作执行成功: {action_name}")
             return result
         except MCPClientError as e:
@@ -124,8 +122,9 @@ class MCPClient:
     def ping(self) -> bool:
         """测试连接"""
         try:
-            self._make_request("GET", "/api/v1/health", retry_count=0)
-            return True
+            result = self._make_request("GET", "/api/v1/singleplayer", retry_count=0)
+            # 检查返回的 JSON 是否包含 state_type 字段
+            return isinstance(result, dict) and "state_type" in result
         except Exception:
             return False
 
