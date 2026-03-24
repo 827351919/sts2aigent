@@ -17,8 +17,8 @@
 
 ## Phase 2 准备
 
-- [ ] 实际游戏测试，验证最小闭环
-- [ ] 处理测试中发现的 bug
+- [x] 实际游戏测试，验证最小闭环
+- [x] 处理测试中发现的 bug（wait 动作问题）
 - [ ] 实现 `event` handler
 - [ ] 实现 `rest_site` handler
 - [ ] 实现 `shop` handler

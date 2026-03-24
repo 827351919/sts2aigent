@@ -70,6 +70,10 @@
    - 导致报错 "Unknown action: wait"
    - **修复**：非玩家回合时返回 `None`，主循环检测到 None 则跳过动作执行
 
+7. **其他状态的 wait 动作回退**（已修复）
+   - `_reward_decision`、`_map_decision`、`_fallback_decision` 在没有可用动作时返回 `wait` Decision
+   - **修复**：统一改为返回 `None`，让主循环跳过动作执行
+
 ### 2026-03-24 Codex Review 结论
 
 **代码内部一致性**：已达标 ✅
