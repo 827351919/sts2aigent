@@ -107,7 +107,10 @@ class ActionExecutor:
         # 战斗动作验证
         if action == "play_card":
             card_idx = params.get("card_index")
-            hand = state.get("hand", [])
+            # raw_state 结构: {"state_type": "monster", "battle": {"player": {"hand": [...]}}}
+            battle = state.get("battle", {})
+            player = battle.get("player", {})
+            hand = player.get("hand", [])
 
             if card_idx is None:
                 return "缺少 card_index 参数"
@@ -118,7 +121,9 @@ class ActionExecutor:
 
         elif action == "select_card_reward":
             card_idx = params.get("index")
-            cards = state.get("card_reward", {}).get("cards", [])
+            # raw_state 结构: {"state_type": "card_reward", "card_reward": {"cards": [...]}}
+            raw_card_reward = state.get("card_reward", {})
+            cards = raw_card_reward.get("cards", [])
 
             if card_idx is None:
                 return "缺少 index 参数"
