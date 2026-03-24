@@ -39,6 +39,22 @@
 - 已实现最小闭环：状态读取 -> 决策 -> 执行 -> 刷新
 - 待实现：`knowledge/loader.py` 等知识库相关功能
 
+### 2026-03-24 修复记录
+
+**Codex Review 发现并修复的问题：**
+
+1. **结构不一致问题**（已修复）
+   - `StateManager._combat_handler` 返回扁平结构（`hand`/`energy`/`enemies` 在顶层）
+   - `DecisionEngine._combat_decision` 错误地当成嵌套结构读取
+   - **修复**：统一按扁平结构读取 context
+
+2. **Action 校验层未同步**（已修复）
+   - `ActionExecutor._validate_decision` 还在校验旧 action 名 `select_card`/`select_node`
+   - **修复**：更新为新的 action 名 `select_card_reward`/`choose_map_node`
+   - 同时修复了 `play_card` 的 hand 读取路径
+
+**当前状态**：第一阶段代码结构问题已修复，等待实际游戏联调验证。
+
 ## 里程碑状态
 
 | 里程碑 | 状态 | 说明 |
