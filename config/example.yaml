@@ -1,31 +1,11 @@
-# STS2 AI Agent 配置文件
+# STS2 AI Agent 配置文件 - Phase 1 最小闭环
 
-# LLM 配置
-llm:
-  # 提供商: claude | deepseek | openai | ollama
-  provider: "claude"
-
-  # 模型名称
-  model: "claude-sonnet-4-6"
-
-  # API Key (建议通过环境变量设置: ${CLAUDE_API_KEY})
-  api_key: ""
-
-  # API 基础 URL (可选，用于自定义端点)
-  base_url: null
-
-  # 温度参数 (0-1，越低越确定)
-  temperature: 0.3
-
-  # 最大 token 数
-  max_tokens: 4096
-
-# MCP Server 配置
+# MCP Server 配置 (STS2MCP HTTP API)
 mcp:
   host: "localhost"
   port: 15526
   timeout: 10
-  reconnect_attempts: 5
+  reconnect_attempts: 3
 
 # Agent 配置
 agent:
@@ -38,25 +18,14 @@ agent:
   # 决策超时 (秒)
   decision_timeout: 30
 
-  # 是否启用知识库
-  enable_knowledge: true
+  # 是否启用知识库 (Phase 1 暂不使用)
+  enable_knowledge: false
 
   # 是否记录决策过程
   log_decisions: true
 
   # 决策历史最大条数
   max_decision_history: 100
-
-# 知识库配置
-knowledge:
-  # AIBOT 知识库路径
-  aibot_path: "./imported/aibot"
-
-  # 自定义知识路径
-  custom_path: "./knowledge/custom"
-
-  # 知识缓存大小
-  cache_size: 1000
 
 # 日志配置
 logging:
@@ -65,8 +34,3 @@ logging:
   max_size_mb: 100
   backup_count: 5
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-
-# UI 配置 (预留)
-ui:
-  enabled: false
-  port: 8080
