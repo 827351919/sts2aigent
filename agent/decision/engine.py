@@ -84,7 +84,7 @@ class DecisionEngine:
                 confidence=1.0
             )
 
-    def _reward_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
+    def _reward_decision(self, state: GameState, context: dict[str, Any]) -> Decision | None:
         """战斗奖励决策：拿第一个奖励"""
         # 根据 STS2MCP 协议，使用 claim_reward(index) 拿取奖励
         items = context.get("items", []) if context else []
@@ -116,14 +116,8 @@ class DecisionEngine:
                 confidence=1.0
             )
 
-        # 没有奖励，等待
-        return Decision(
-            action_name="wait",
-            params={},
-            reason="没有可拿的奖励",
-            source="fallback",
-            confidence=0.3
-        )
+        # 没有奖励，返回 None 让主循环跳过
+        return None
 
     def _card_reward_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
         """卡牌奖励决策：选第一张或跳过"""
@@ -147,7 +141,7 @@ class DecisionEngine:
                 confidence=1.0
             )
 
-    def _map_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
+    def _map_decision(self, state: GameState, context: dict[str, Any]) -> Decision | None:
         """地图决策：选第一个可用节点
 
         STS2MCP 动作: choose_map_node(index)
@@ -168,24 +162,14 @@ class DecisionEngine:
                 confidence=0.6
             )
         else:
-            return Decision(
-                action_name="wait",
-                params={},
-                reason="没有可用节点",
-                source="fallback",
-                confidence=0.3
-            )
+            # 没有可用节点，返回 None 让主循环跳过
+            return None
 
-    def _fallback_decision(self, state: GameState, context: dict[str, Any]) -> Decision:
+    def _fallback_decision(self, state: GameState, context: dict[str, Any]) -> Decision | None:
         """兜底决策"""
         self.logger.warning(
-            f"状态 {state.state_type} 没有专用决策逻辑，使用兜底策略"
+            f"状态 {state.state_type} 没有专用决策逻辑，返回 None"
         )
 
-        return Decision(
-            action_name="wait",
-            params={},
-            reason=f"未知状态[{state.state_type}]，等待人工介入",
-            source="fallback",
-            confidence=0.1
-        )
+        # 返回 None 让主循环跳过
+        return None
